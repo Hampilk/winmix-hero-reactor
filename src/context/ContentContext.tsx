@@ -45,15 +45,67 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [contents]);
 
   const addContent = (content: Omit<Content, 'id' | 'order'>) => {
-    // Create a new content object with id and order properties
-    const newItem = {
-      ...content,
-      id: uuidv4(),
-      order: contents.length,
-    };
+    // The issue is here - we need to make sure each content type has all required properties
+    // Create a properly typed content object based on the content's type
+    let newContent: Content;
     
-    // Type assertion to ensure TypeScript recognizes it as Content
-    const newContent = newItem as Content;
+    // Properly create each content type with its required properties
+    if (content.type === 'card') {
+      newContent = {
+        ...content,
+        id: uuidv4(),
+        order: contents.length,
+        // Make sure these properties exist for CardContent
+        title: (content as any).title || '',
+        content: (content as any).content || '',
+        imageUrl: (content as any).imageUrl
+      } as Content;
+    } else if (content.type === 'button') {
+      newContent = {
+        ...content,
+        id: uuidv4(),
+        order: contents.length,
+        // Make sure these properties exist for ButtonContent
+        text: (content as any).text || '',
+        url: (content as any).url || '',
+        variant: (content as any).variant
+      } as Content;
+    } else if (content.type === 'table') {
+      newContent = {
+        ...content,
+        id: uuidv4(),
+        order: contents.length,
+        // Make sure these properties exist for TableContent
+        headers: (content as any).headers || [],
+        rows: (content as any).rows || []
+      } as Content;
+    } else if (content.type === 'grid') {
+      newContent = {
+        ...content,
+        id: uuidv4(),
+        order: contents.length,
+        // Make sure these properties exist for GridContent
+        columns: (content as any).columns || 3,
+        rows: (content as any).rows || 3,
+        items: (content as any).items || []
+      } as Content;
+    } else if (content.type === 'title') {
+      newContent = {
+        ...content,
+        id: uuidv4(),
+        order: contents.length,
+        // Make sure these properties exist for TitleContent
+        content: (content as any).content || '',
+        level: (content as any).level || 2
+      } as Content;
+    } else {
+      // Text content or any other type
+      newContent = {
+        ...content,
+        id: uuidv4(),
+        order: contents.length
+      } as Content;
+    }
     
     setContents((prev) => [...prev, newContent]);
   };
