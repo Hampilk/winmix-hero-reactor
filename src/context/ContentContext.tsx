@@ -45,12 +45,15 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [contents]);
 
   const addContent = (content: Omit<Content, 'id' | 'order'>) => {
-    // We need to cast this to Content as we'll add the missing properties
-    const newContent: Content = {
+    // Create a new content object with id and order properties
+    const newItem = {
       ...content,
       id: uuidv4(),
       order: contents.length,
-    } as Content;
+    };
+    
+    // Type assertion to ensure TypeScript recognizes it as Content
+    const newContent = newItem as Content;
     
     setContents((prev) => [...prev, newContent]);
   };
