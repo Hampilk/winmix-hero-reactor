@@ -45,7 +45,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [contents]);
 
   const addContent = (content: Omit<Content, 'id' | 'order'>) => {
-    const newContent = {
+    // We need to cast this to Content as we'll add the missing properties
+    const newContent: Content = {
       ...content,
       id: uuidv4(),
       order: contents.length,
