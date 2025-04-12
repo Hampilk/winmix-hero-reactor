@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, Menu, X, Calendar, Brain, ArrowRight } from 'lucide-react';
+import { Trophy, Menu, X, PlusCircle, Save, Edit, Trash, MoveVertical } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -47,32 +49,34 @@ const Header = () => {
           <div className="absolute -inset-1 rounded-lg bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-lg -z-10"></div>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-2">
-          <Link to="/matches" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm font-medium">Mérkőzések</span>
-          </Link>
-          <Link to="/analysis" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
-            <Brain className="w-4 h-4" />
-            <span className="text-sm font-medium">V-Sports Elemzés</span>
-          </Link>
-          <Link to="/league" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
-            <Trophy className="w-4 h-4" />
-            <span className="text-sm font-medium">Bajnokság</span>
-          </Link>
-        </nav>
-
-        {/* Desktop Auth Buttons */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 border-b border-transparent hover:border-white/50">
-            Bejelentkezés
-          </Link>
-          <Link to="/signup" className="group inline-flex items-center gap-1.5 relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 text-white text-sm font-medium px-5 py-2.5 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.25)] transition-all duration-300">
-            <span className="relative z-10">Regisztráció</span>
-            <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/80 to-blue-600/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
+        {/* Content Creation Buttons - Desktop */}
+        <div className="hidden md:flex items-center gap-2">
+          <DrawerTrigger asChild>
+            <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
+              <PlusCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">Új tartalom</span>
+            </Button>
+          </DrawerTrigger>
+          
+          <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
+            <Edit className="w-4 h-4" />
+            <span className="text-sm font-medium">Szerkesztés</span>
+          </Button>
+          
+          <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
+            <Save className="w-4 h-4" />
+            <span className="text-sm font-medium">Mentés</span>
+          </Button>
+          
+          <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
+            <Trash className="w-4 h-4" />
+            <span className="text-sm font-medium">Törlés</span>
+          </Button>
+          
+          <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300 bg-black/70 text-gray-300 hover:text-white hover:bg-black/80 border border-white/10">
+            <MoveVertical className="w-4 h-4" />
+            <span className="text-sm font-medium">Rendezés</span>
+          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -89,27 +93,32 @@ const Header = () => {
       {/* Mobile Menu Panel */}
       <div className={`md:hidden absolute top-full left-0 right-0 shadow-lg bg-gray-900/95 backdrop-blur-xl border-b border-white/10 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
         <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-          <Link to="/matches" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm font-medium">Mérkőzések</span>
-          </Link>
-          <Link to="/analysis" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
-            <Brain className="w-4 h-4" />
-            <span className="text-sm font-medium">V-Sports Elemzés</span>
-          </Link>
-          <Link to="/league" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
-            <Trophy className="w-4 h-4" />
-            <span className="text-sm font-medium">Bajnokság</span>
-          </Link>
-          <hr className="border-white/10 my-2" />
-          <Link to="/login" className="block text-center text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 py-2">
-            Bejelentkezés
-          </Link>
-          <Link to="/signup" className="group w-full inline-flex items-center justify-center gap-1.5 relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 hover:border-white/20 text-white text-sm font-medium px-5 py-2.5 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.25)] transition-all duration-300">
-            <span className="relative z-10">Regisztráció</span>
-            <ArrowRight className="w-3.5 h-3.5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/80 to-blue-600/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
+          <DrawerTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
+              <PlusCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">Új tartalom</span>
+            </Button>
+          </DrawerTrigger>
+          
+          <Button variant="ghost" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
+            <Edit className="w-4 h-4" />
+            <span className="text-sm font-medium">Szerkesztés</span>
+          </Button>
+          
+          <Button variant="ghost" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
+            <Save className="w-4 h-4" />
+            <span className="text-sm font-medium">Mentés</span>
+          </Button>
+          
+          <Button variant="ghost" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
+            <Trash className="w-4 h-4" />
+            <span className="text-sm font-medium">Törlés</span>
+          </Button>
+          
+          <Button variant="ghost" className="flex items-center gap-2 rounded-md px-4 py-2 transition-all duration-300 text-gray-300 hover:text-white hover:bg-white/10">
+            <MoveVertical className="w-4 h-4" />
+            <span className="text-sm font-medium">Rendezés</span>
+          </Button>
         </div>
       </div>
     </header>
