@@ -50,27 +50,27 @@ export const ContentCreationDrawer = () => {
           </TabsList>
           
           <TabsContent value="text">
-            <TextForm onSubmit={(data) => addContent('text', data)} />
+            <TextForm onSubmit={(data) => addContent({ type: 'text', ...data })} />
           </TabsContent>
           
           <TabsContent value="title">
-            <TitleForm onSubmit={(data) => addContent('title', data)} />
+            <TitleForm onSubmit={(data) => addContent({ type: 'title', ...data })} />
           </TabsContent>
           
           <TabsContent value="table">
-            <TableForm onSubmit={(data) => addContent('table', data)} />
+            <TableForm onSubmit={(data) => addContent({ type: 'table', ...data })} />
           </TabsContent>
           
           <TabsContent value="button">
-            <ButtonForm onSubmit={(data) => addContent('button', data)} />
+            <ButtonForm onSubmit={(data) => addContent({ type: 'button', ...data })} />
           </TabsContent>
           
           <TabsContent value="card">
-            <CardForm onSubmit={(data) => addContent('card', data)} />
+            <CardForm onSubmit={(data) => addContent({ type: 'card', ...data })} />
           </TabsContent>
           
           <TabsContent value="grid">
-            <GridForm onSubmit={(data) => addContent('grid', data)} />
+            <GridForm onSubmit={(data) => addContent({ type: 'grid', ...data })} />
           </TabsContent>
         </Tabs>
       </div>
