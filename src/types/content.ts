@@ -1,3 +1,4 @@
+
 // @/types/content.ts
 
 import { v4 as uuidv4 } from 'uuid';
@@ -76,9 +77,8 @@ export interface CardContent extends BaseContent {
 export interface GridItem {
   id: string;         // Unique ID for the grid item
   contentId?: string; // ID linking to a separate Content object (more flexible)
-  // OR simpler content directly:
-  // content?: string; // Simple text/HTML content (if not linking)
-
+  content?: string;   // Simple text/HTML content for direct display
+  
   // Grid positioning properties
   colStart?: number;   // Grid column start line (1-based)
   rowStart?: number;   // Grid row start line (1-based)
@@ -138,9 +138,10 @@ export const createDefaultTableRow = (cellCount: number = 3): TableRow => ({
 });
 
 /** Creates a default GridItem */
-export const createDefaultGridItem = (contentId?: string): GridItem => ({
+export const createDefaultGridItem = (content: string = '', contentId?: string): GridItem => ({
     id: uuidv4(),
-    contentId: contentId, // Link to actual content if needed
+    content,
+    contentId, // Link to actual content if needed
     colSpan: 1,
     rowSpan: 1,
 });
@@ -173,7 +174,7 @@ export const createDefaultContent = (type: ContentType, order: number): Content 
             return { ...base, type, order, height: 20 } as SpacerContent;
         default:
              // Ensures any new ContentType added will cause a compile error here if not handled
-            const _exhaustiveCheck: never = type;
-            throw new Error(`Unhandled default content type: ${_exhaustiveCheck}`);
+            const exhaustiveCheck: never = type;
+            throw new Error(`Unhandled default content type: ${exhaustiveCheck}`);
     }
 };
