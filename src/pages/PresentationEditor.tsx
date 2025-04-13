@@ -2,6 +2,7 @@
 import React from 'react';
 import { ContentDisplay } from '@/components/ContentCreator/ContentDisplay';
 import { ContentProvider } from '@/context/ContentContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { useParams } from 'react-router-dom';
 
 const PresentationEditor = () => {
@@ -9,14 +10,16 @@ const PresentationEditor = () => {
   const isNewPresentation = !id;
 
   return (
-    <ContentProvider>
-      <div className="h-screen flex flex-col bg-background">
-        <ContentDisplay 
-          presentationId={id} 
-          isNewPresentation={isNewPresentation}
-        />
-      </div>
-    </ContentProvider>
+    <ThemeProvider>
+      <ContentProvider>
+        <div className="h-screen flex flex-col bg-background">
+          <ContentDisplay 
+            presentationId={id} 
+            isNewPresentation={isNewPresentation}
+          />
+        </div>
+      </ContentProvider>
+    </ThemeProvider>
   );
 };
 

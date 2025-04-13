@@ -1,6 +1,4 @@
 
-import { Content } from './content';
-
 export type SlideType = 'title' | 'content' | 'gallery' | 'blank' | 'text' | 'image';
 
 export interface SlideElement {

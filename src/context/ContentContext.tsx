@@ -108,9 +108,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           } as GridContent;
           break;
         default: {
-          // Fix the exhaustive check without referencing properties of 'never'
+          // Fix the exhaustive check
           const exhaustiveCheck: never = contentData.type;
-          throw new Error(`Unhandled content type: ${String(exhaustiveCheck)}`);
+          throw new Error(`Unhandled content type: ${exhaustiveCheck}`);
         }
       }
       
@@ -163,7 +163,6 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   }, []);
 
-  // Slide management functions
   const slides = currentPresentation?.slides || [];
   const currentSlide = slides[currentSlideIndex] || null;
 
