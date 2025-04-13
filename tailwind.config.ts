@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -122,7 +121,12 @@ export default {
 				'fade-in': 'fade-in 0.5s ease-in both',
 				'shine': 'shine 1.0s ease-in-out',
 				'ping': 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite'
-			}
+			},
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				heading: ['Montserrat', 'sans-serif'],
+				mono: ['JetBrains Mono', 'monospace'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
