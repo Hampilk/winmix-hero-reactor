@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Content } from '@/types/content';
+import { Content, ContentType } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
 import { Presentation, Slide } from '@/types/slides';
 
 interface ContentContextType {
   contents: Content[];
-  addContent: (content: Omit<Content, 'id' | 'order'>) => void;
+  addContent: (content: Partial<Content> & { type: ContentType }) => void;
   updateContent: (id: string, content: Partial<Content>) => void;
   deleteContent: (id: string) => void;
   reorderContent: (id: string, newOrder: number) => void;
@@ -45,13 +45,50 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
 
-  const addContent = useCallback((content: Omit<Content, 'id' | 'order'>) => {
+  const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
     setContents(prevContents => {
-      const newContent = {
-        ...content,
-        id: uuidv4(),
-        order: prevContents.length,
-      } as Content;
+      // Create a properly typed new content based on the type
+      let newContent: Content;
+      
+      switch (contentData.type) {
+        case 'text':
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            type: 'text',
+            content: contentData.content || '',
+          } as Content;
+          break;
+        case 'title':
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            type: 'title',
+            content: contentData.content || '',
+            level: (contentData as any).level || 2,
+          } as Content;
+          break;
+        case 'table':
+        case 'button':
+        case 'card':
+        case 'grid':
+          // Handle other content types
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            ...contentData,
+          } as Content;
+          break;
+        default:
+          // Fallback
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            type: contentData.type,
+            ...(contentData as any),
+          } as Content;
+      }
+      
       return [...prevContents, newContent];
     });
   }, []);
