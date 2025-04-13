@@ -4,6 +4,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/toaster";
 import { ThemeProvider } from "next-themes";
+import PresentationEditor from "./pages/PresentationEditor";
 
 function App() {
   return (
@@ -14,6 +15,8 @@ function App() {
     >
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/presentation" element={<PresentationEditor />} />
+        <Route path="/presentation/:id" element={<PresentationEditor />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

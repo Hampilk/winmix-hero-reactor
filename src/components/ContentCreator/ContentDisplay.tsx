@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   ResizablePanelGroup,
   ResizablePanel,
@@ -11,10 +11,41 @@ import { EditorToolbar } from './EditorToolbar/EditorToolbar';
 import { SlidePanel } from './SlidePanel/SlidePanel';
 import { NavigationHeader } from './NavigationHeader/NavigationHeader';
 import { useToast } from '@/hooks/use-toast';
+import { useContent } from '@/context/ContentContext';
 
-export const ContentDisplay: React.FC = () => {
+interface ContentDisplayProps {
+  presentationId?: string;
+  isNewPresentation?: boolean;
+}
+
+export const ContentDisplay: React.FC<ContentDisplayProps> = ({ 
+  presentationId,
+  isNewPresentation = false
+}) => {
   const { toast } = useToast();
+  const { setCurrentPresentation } = useContent();
   
+  useEffect(() => {
+    if (presentationId) {
+      // In a real app, this would fetch the presentation data from the API
+      console.log(`Loading presentation with ID: ${presentationId}`);
+      // Mock loading a presentation
+      setCurrentPresentation({
+        id: presentationId,
+        title: `Presentation ${presentationId}`,
+        slides: []
+      });
+    } else if (isNewPresentation) {
+      // Create a new presentation
+      console.log('Creating new presentation');
+      setCurrentPresentation({
+        id: 'new',
+        title: 'Untitled Presentation',
+        slides: []
+      });
+    }
+  }, [presentationId, isNewPresentation, setCurrentPresentation]);
+
   const handleSave = () => {
     toast({
       title: "Presentation saved",

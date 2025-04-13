@@ -1,13 +1,10 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { Slide } from '@/types/slides';
 
 interface SlideThumbProps {
-  slide: {
-    id: number;
-    title: string;
-    type: string;
-  };
+  slide: Slide;
   index: number;
   isActive: boolean;
   onClick: () => void;

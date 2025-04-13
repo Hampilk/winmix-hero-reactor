@@ -1,27 +1,43 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, LayoutGrid, Grid2X2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { SlideThumb } from './SlideThumb';
+import { useContent } from '@/context/ContentContext';
+import { Slide } from '@/types/slides';
 
 export const SlidePanel: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState([
-    { id: 1, title: 'Title Slide', type: 'title' },
-    { id: 2, title: 'Content Slide', type: 'content' },
-    { id: 3, title: 'Image Gallery', type: 'gallery' },
-  ]);
+  const { 
+    slides, 
+    currentSlideIndex, 
+    setCurrentSlideIndex, 
+    addSlide, 
+    reorderSlide
+  } = useContent();
 
-  const addNewSlide = () => {
-    const newSlide = {
-      id: slides.length + 1,
+  const handleAddSlide = () => {
+    addSlide({
+      id: `slide-${Date.now()}`,
       title: `Slide ${slides.length + 1}`,
-      type: 'blank'
-    };
-    setSlides([...slides, newSlide]);
-    setCurrentSlide(slides.length);
+      type: 'blank',
+      elements: []
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    reorderSlide(sourceIndex, targetIndex);
   };
 
   return (
@@ -49,21 +65,28 @@ export const SlidePanel: React.FC = () => {
       <Button 
         className="mb-4 justify-start" 
         variant="default" 
-        onClick={addNewSlide}
+        onClick={handleAddSlide}
       >
         <Plus className="mr-2 h-4 w-4" />
         Add Slide
       </Button>
       
       <div className="flex-1 overflow-auto space-y-2">
-        {slides.map((slide, index) => (
-          <SlideThumb
+        {slides.map((slide: Slide, index: number) => (
+          <div
             key={slide.id}
-            slide={slide}
-            index={index}
-            isActive={index === currentSlide}
-            onClick={() => setCurrentSlide(index)}
-          />
+            draggable
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, index)}
+          >
+            <SlideThumb
+              slide={slide}
+              index={index}
+              isActive={index === currentSlideIndex}
+              onClick={() => setCurrentSlideIndex(index)}
+            />
+          </div>
         ))}
       </div>
     </div>
