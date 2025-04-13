@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Content, ContentType, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
@@ -108,8 +109,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           } as GridContent;
           break;
         default: {
-          // Fix the exhaustive check
-          const exhaustiveCheck: never = contentData.type;
+          // Use type assertion to fix the exhaustive check
+          const exhaustiveCheck: never = contentData.type as never;
           throw new Error(`Unhandled content type: ${exhaustiveCheck}`);
         }
       }

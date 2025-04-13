@@ -28,7 +28,7 @@ export const DraggableSlideElement: React.FC<DraggableSlideElementProps> = ({
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    position: 'absolute',
+    position: 'absolute' as const, // Fix the type issue by specifying 'absolute' as a const
     left: `${element.position?.x || 0}px`,
     top: `${element.position?.y || 0}px`,
     width: element.size?.width ? `${element.size.width}px` : 'auto',
