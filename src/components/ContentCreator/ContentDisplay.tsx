@@ -12,6 +12,7 @@ import { SlidePanel } from './SlidePanel/SlidePanel';
 import { NavigationHeader } from './NavigationHeader/NavigationHeader';
 import { useToast } from '@/hooks/use-toast';
 import { useContent } from '@/context/ContentContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 interface ContentDisplayProps {
   presentationId?: string;
@@ -54,26 +55,28 @@ export const ContentDisplay: React.FC<ContentDisplayProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <NavigationHeader onSave={handleSave} />
-      
-      <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-            <SlidePanel />
-          </ResizablePanel>
-          
-          <ResizableHandle withHandle />
-          
-          <ResizablePanel defaultSize={80}>
-            <div className="flex flex-col h-full">
-              <EditorToolbar />
-              <SlideCanvas />
-              <SlideNavigation />
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+    <ThemeProvider>
+      <div className="flex flex-col h-screen">
+        <NavigationHeader onSave={handleSave} />
+        
+        <div className="flex-1 overflow-hidden">
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+              <SlidePanel />
+            </ResizablePanel>
+            
+            <ResizableHandle withHandle />
+            
+            <ResizablePanel defaultSize={80}>
+              <div className="flex flex-col h-full">
+                <EditorToolbar />
+                <SlideCanvas />
+                <SlideNavigation />
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };

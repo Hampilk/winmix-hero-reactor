@@ -109,9 +109,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           } as GridContent;
           break;
         default: {
-          // Fix for the exhaustive check
+          // Type-safe exhaustive check
           const _exhaustiveCheck: never = contentData.type;
-          throw new Error(`Unhandled content type: ${contentData.type}`);
+          throw new Error(`Unhandled content type: ${String(contentData.type)}`);
         }
       }
       
