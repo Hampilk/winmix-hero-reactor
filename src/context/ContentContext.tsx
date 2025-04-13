@@ -111,7 +111,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         default:
           // This ensures TypeScript exhaustiveness checking
           const _exhaustiveCheck: never = contentData.type;
-          throw new Error(`Unhandled content type: ${contentData.type}`);
+          throw new Error(`Unhandled content type: ${_exhaustiveCheck}`);
       }
       
       return [...prevContents, newContent];
