@@ -1,5 +1,6 @@
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Content, ContentType } from '@/types/content';
+import { Content, ContentType, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
 import { Presentation, Slide } from '@/types/slides';
 
@@ -57,7 +58,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             order: prevContents.length,
             type: 'text',
             content: contentData.content || '',
-          } as Content;
+          } as TextContent;
           break;
         case 'title':
           newContent = {
@@ -65,28 +66,52 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             order: prevContents.length,
             type: 'title',
             content: contentData.content || '',
-            level: (contentData as any).level || 2,
-          } as Content;
+            level: (contentData as Partial<TitleContent>).level || 2,
+          } as TitleContent;
           break;
         case 'table':
-        case 'button':
-        case 'card':
-        case 'grid':
-          // Handle other content types
           newContent = {
             id: uuidv4(),
             order: prevContents.length,
-            ...contentData,
-          } as Content;
+            type: 'table',
+            headers: (contentData as Partial<TableContent>).headers || [],
+            rows: (contentData as Partial<TableContent>).rows || [],
+          } as TableContent;
+          break;
+        case 'button':
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            type: 'button',
+            text: (contentData as Partial<ButtonContent>).text || '',
+            url: (contentData as Partial<ButtonContent>).url || '',
+            variant: (contentData as Partial<ButtonContent>).variant,
+          } as ButtonContent;
+          break;
+        case 'card':
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            type: 'card',
+            title: (contentData as Partial<CardContent>).title || '',
+            content: (contentData as Partial<CardContent>).content || '',
+            imageUrl: (contentData as Partial<CardContent>).imageUrl,
+          } as CardContent;
+          break;
+        case 'grid':
+          newContent = {
+            id: uuidv4(),
+            order: prevContents.length,
+            type: 'grid',
+            columns: (contentData as Partial<GridContent>).columns || 3,
+            rows: (contentData as Partial<GridContent>).rows || 3,
+            items: (contentData as Partial<GridContent>).items || [],
+          } as GridContent;
           break;
         default:
-          // Fallback
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: contentData.type,
-            ...(contentData as any),
-          } as Content;
+          // This ensures TypeScript exhaustiveness checking
+          const _exhaustiveCheck: never = contentData.type;
+          throw new Error(`Unhandled content type: ${contentData.type}`);
       }
       
       return [...prevContents, newContent];
