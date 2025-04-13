@@ -1,4 +1,6 @@
 
+import { Content } from './content';
+
 export type SlideType = 'title' | 'content' | 'gallery' | 'blank' | 'text' | 'image';
 
 export interface SlideElement {
@@ -22,6 +24,7 @@ export interface Slide {
   subtitle?: string;
   type: SlideType;
   elements?: SlideElement[];
+  content?: Content[];  // Added content array to hold structured content
   background?: {
     color?: string;
     image?: string;

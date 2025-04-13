@@ -16,7 +16,7 @@ interface ContentItemProps {
 }
 
 export const ContentItem: React.FC<ContentItemProps> = ({ content }) => {
-  const { deleteContent, reorderContent, editMode, setFocusedContentId, focusedContentId, contents } = useContent();
+  const { deleteContent, reorderContent, editMode, setFocusedContentId, focusedContentId, currentSlideContents } = useContent();
   const isFocused = focusedContentId === content.id;
 
   const handleMoveUp = (id: string, currentOrder: number) => {
@@ -26,7 +26,7 @@ export const ContentItem: React.FC<ContentItemProps> = ({ content }) => {
   };
 
   const handleMoveDown = (id: string, currentOrder: number) => {
-    if (currentOrder < contents.length - 1) {
+    if (currentOrder < currentSlideContents.length - 1) {
       reorderContent(id, currentOrder + 1);
     }
   };
@@ -84,7 +84,7 @@ export const ContentItem: React.FC<ContentItemProps> = ({ content }) => {
             variant="ghost"
             className="h-7 w-7"
             onClick={() => handleMoveDown(content.id, content.order)}
-            disabled={content.order === contents.length - 1}
+            disabled={content.order === currentSlideContents.length - 1}
             title="Move Down"
           >
             <ArrowDown className="h-4 w-4" />

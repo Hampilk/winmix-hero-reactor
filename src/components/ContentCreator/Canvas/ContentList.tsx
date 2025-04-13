@@ -4,9 +4,9 @@ import { useContent } from '@/context/ContentContext';
 import { ContentItem } from './ContentItem';
 
 export const ContentList: React.FC = () => {
-  const { contents, editMode } = useContent();
+  const { currentSlideContents, editMode } = useContent();
 
-  if (contents.length === 0 && !editMode) {
+  if (currentSlideContents.length === 0 && !editMode) {
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Még nincs tartalom.</p>
@@ -14,7 +14,7 @@ export const ContentList: React.FC = () => {
     );
   }
 
-  if (contents.length === 0 && editMode) {
+  if (currentSlideContents.length === 0 && editMode) {
     return (
       <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Adj hozzá új tartalmat a vászonvezérlőkkel.</p>
@@ -24,7 +24,7 @@ export const ContentList: React.FC = () => {
 
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto">
-      {contents.map((content) => (
+      {currentSlideContents.map((content) => (
         <ContentItem key={content.id} content={content} />
       ))}
     </div>

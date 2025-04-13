@@ -1,33 +1,33 @@
-// @/components/providers/ContentContext.tsx (or your path)
+
+// @/components/providers/ContentContext.tsx
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import {
-    Content, ContentType, createDefaultContent, // Use helper for defaults
-    // Import specific types if needed for casting/checking, but often Content union is enough
-} from '@/types/content'; // Adjust path as needed
+    Content, ContentType, createDefaultContent,
+} from '@/types/content'; 
 import { v4 as uuidv4 } from 'uuid';
-import { Presentation, Slide } from '@/types/slides'; // Adjust path as needed (ensure Slide has 'content: Content[]')
+import { Presentation, Slide } from '@/types/slides'; 
 
 // --- Context Type Definition ---
 interface ContentContextType {
   // Presentation & Slide Management
   currentPresentation: Presentation | null;
   setCurrentPresentation: (presentation: Presentation | null) => void;
-  slides: Slide[];                 // Derived from currentPresentation
+  slides: Slide[];                 
   currentSlideIndex: number;
   setCurrentSlideIndex: (index: number) => void;
-  currentSlide: Slide | null;      // Derived from slides and currentSlideIndex
-  addSlide: (slide?: Partial<Slide>) => string; // Add slide, optionally with partial data, returns new slide ID
+  currentSlide: Slide | null;      
+  addSlide: (slide?: Partial<Slide>) => string; 
   updateSlide: (id: string, slideUpdate: Partial<Slide>) => void;
   deleteSlide: (id: string) => void;
   reorderSlide: (sourceIndex: number, targetIndex: number) => void;
 
   // Content Management (Operates on the CURRENT slide)
-  currentSlideContents: Content[]; // Derived from currentSlide
-  addContent: (type: ContentType, partialData?: Partial<Content>) => Content | null; // Adds content TO CURRENT SLIDE, returns the new content object
-  updateContent: (id: string, contentUpdate: Partial<Content>) => void; // Updates content ON CURRENT SLIDE
-  deleteContent: (id: string) => void; // Deletes content FROM CURRENT SLIDE
-  reorderContent: (id: string, newOrder: number) => void; // Reorders content ON CURRENT SLIDE
+  currentSlideContents: Content[]; 
+  addContent: (type: ContentType, partialData?: Partial<Content>) => Content | null; 
+  updateContent: (id: string, contentUpdate: Partial<Content>) => void; 
+  deleteContent: (id: string) => void; 
+  reorderContent: (id: string, newOrder: number) => void; 
   focusedContentId: string | null;
   setFocusedContentId: (id: string | null) => void;
 
@@ -85,7 +85,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const newSlideId = uuidv4();
       const newSlide: Slide = {
           id: newSlideId,
+          title: slideData?.title || "New Slide",
+          type: slideData?.type || "content",
           content: [], // Start with empty content array
+          elements: [], // Start with empty elements array
           // Add other default slide properties if needed (e.g., background)
           ...(slideData || {}), // Merge partial data
       };
@@ -187,32 +190,34 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
               if (index === currentSlideIndex) {
                   const currentContent = slide.content || [];
                   const newOrder = currentContent.length;
-                  // Create default content and merge partial data carefully
-                  const defaultContent = createDefaultContent(type, newOrder);
-                   newContent = {
-                      ...defaultContent,
+                  
+                  // Create default content based on type
+                  const baseContent = createDefaultContent(type, newOrder);
+                  
+                  // Merge with partial data but preserve critical properties
+                  newContent = {
+                      ...baseContent,
                       ...(partialData || {}),
-                      id: defaultContent.id, // Ensure partialData doesn't overwrite ID
-                      type: type,           // Ensure partialData doesn't overwrite type
-                      order: newOrder,      // Ensure partialData doesn't overwrite order
+                      id: baseContent.id, // Ensure ID isn't changed
+                      type, // Ensure type isn't changed
+                      order: newOrder // Ensure order is correct
+                  } as Content; // Use type assertion to avoid type issues
+                  
+                  return { 
+                      ...slide, 
+                      content: [...currentContent, newContent] 
                   };
-
-                  // Perform specific type validation/cleanup if needed based on partialData
-                  // e.g., ensure title.level is valid, table headers/rows are arrays, etc.
-                  // This step depends on how strict you want to be with partialData.
-                  // For simplicity here, we rely on createDefaultContent + spread.
-
-                  return { ...slide, content: [...currentContent, newContent] };
               }
               return slide;
           });
       });
-       // Focus the newly added content item immediately (optional)
-       if (newContent) {
-            setFocusedContentId(newContent.id);
-       }
 
-       return newContent; // Return the newly created content object
+      // Focus the newly added content item immediately (optional)
+      if (newContent) {
+          setFocusedContentId(newContent.id);
+      }
+
+      return newContent; // Return the newly created content object
   }, [currentSlide, currentSlideIndex, updatePresentationSlides]);
 
 
@@ -224,7 +229,12 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
               if (index === currentSlideIndex) {
                   const updatedContent = (slide.content || []).map(content =>
                       content.id === id
-                          ? { ...content, ...contentUpdate, id, type: content.type } // Prevent changing ID or type via update
+                          ? { 
+                              ...content, 
+                              ...contentUpdate, 
+                              id: content.id, // Preserve ID
+                              type: content.type // Preserve content type
+                            } as Content
                           : content
                   );
                   return { ...slide, content: updatedContent };
