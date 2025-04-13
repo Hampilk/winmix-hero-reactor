@@ -1,7 +1,7 @@
 
 import { Route, Routes } from "react-router-dom";
-import { Index } from "./pages/Index";
-import { NotFound } from "./pages/NotFound";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 import { Toaster } from "./components/ui/toaster";
 import { ThemeProvider } from "next-themes";
 
