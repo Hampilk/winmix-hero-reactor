@@ -108,10 +108,11 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             items: (contentData as Partial<GridContent>).items || [],
           } as GridContent;
           break;
-        default:
+        default: {
           // This ensures TypeScript exhaustiveness checking
-          const _exhaustiveCheck: never = contentData.type;
-          throw new Error(`Unhandled content type: ${_exhaustiveCheck}`);
+          const exhaustiveCheck: never = contentData.type;
+          throw new Error(`Unhandled content type: ${String(exhaustiveCheck)}`);
+        }
       }
       
       return [...prevContents, newContent];
