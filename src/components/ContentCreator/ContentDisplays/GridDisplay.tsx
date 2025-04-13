@@ -4,9 +4,11 @@ import { GridContent } from '@/types/content';
 
 interface GridDisplayProps {
   content: GridContent;
+  className?: string;
+  onClick?: () => void;
 }
 
-export const GridDisplay: React.FC<GridDisplayProps> = ({ content }) => {
+export const GridDisplay: React.FC<GridDisplayProps> = ({ content, className = '', onClick }) => {
   const { columns, rows, items } = content;
 
   const gridStyle = {
@@ -17,7 +19,11 @@ export const GridDisplay: React.FC<GridDisplayProps> = ({ content }) => {
   };
 
   return (
-    <div style={gridStyle} className="border border-gray-800 p-4 rounded-lg bg-gray-900/30">
+    <div 
+      style={gridStyle} 
+      className={`border border-gray-800 p-4 rounded-lg bg-gray-900/30 ${className}`}
+      onClick={onClick}
+    >
       {items.map((item) => (
         <div
           key={item.id}

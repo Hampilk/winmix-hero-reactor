@@ -5,13 +5,15 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 
 interface TableDisplayProps {
   content: TableContent;
+  className?: string;
+  onClick?: () => void;
 }
 
-export const TableDisplay: React.FC<TableDisplayProps> = ({ content }) => {
+export const TableDisplay: React.FC<TableDisplayProps> = ({ content, className = '', onClick }) => {
   const { headers, rows } = content;
 
   return (
-    <div className="overflow-x-auto">
+    <div className={`overflow-x-auto ${className}`} onClick={onClick}>
       <Table className="border border-gray-800 rounded-lg">
         <TableHeader className="bg-gray-900">
           <TableRow>

@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button';
 
 interface ButtonDisplayProps {
   content: ButtonContent;
+  className?: string;
+  onClick?: () => void;
 }
 
-export const ButtonDisplay: React.FC<ButtonDisplayProps> = ({ content }) => {
+export const ButtonDisplay: React.FC<ButtonDisplayProps> = ({ content, className = '', onClick }) => {
   const { text, url, variant = 'default' } = content;
 
   return (
-    <div className="flex justify-center my-4">
+    <div className={`flex justify-center my-4 ${className}`} onClick={onClick}>
       <Button
         variant={variant}
         asChild

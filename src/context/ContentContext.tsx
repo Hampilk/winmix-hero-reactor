@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, SetStateAction } from 'react'; // SetStateAction importálása
+import React, { createContext, useContext, useState, useEffect, SetStateAction } from 'react';
 import { Content, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ContentContextType {
   contents: Content[];
   addContent: (content: Omit<Content, 'id' | 'order'>) => void;
-  updateContent: (id: string, content: Partial<Omit<Content, 'id' | 'type' | 'order'>>) => void; // 'type' és 'order' eltávolítása a Partial-ból
+  updateContent: (id: string, content: Partial<Omit<Content, 'id' | 'type' | 'order'>>) => void;
   deleteContent: (id: string) => void;
   reorderContent: (id: string, newOrder: number) => void;
   editMode: boolean;
@@ -27,167 +27,134 @@ export const useContent = (): ContentContextType => {
 };
 
 export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Az állapot típusa explicit megadva a useState-nek
   const [contents, setContents] = useState<Content[]>([]);
   const [editMode, setEditMode] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [focusedContentId, setFocusedContentId] = useState<string | null>(null);
 
-  // Load contents from localStorage on component mount
   useEffect(() => {
     const savedContents = localStorage.getItem('winmix-contents');
     if (savedContents) {
       try {
-        // Itt érdemes lehet validálni a betöltött adatokat a Content[] típussal szemben
         const parsedContents = JSON.parse(savedContents);
-        if (Array.isArray(parsedContents)) { // Alapvető ellenőrzés
-           // TODO: Mélyebb validáció szükséges lehet a típusokhoz (pl. Zod használatával)
+        if (Array.isArray(parsedContents)) {
           setContents(parsedContents as Content[]);
         } else {
-           console.error('Saved contents are not an array');
-           setContents([]); // Visszaállítás üres tömbre hiba esetén
+          console.error('Saved contents are not an array');
+          setContents([]);
         }
       } catch (e) {
         console.error('Failed to parse saved contents', e);
-        setContents([]); // Visszaállítás üres tömbre hiba esetén
+        setContents([]);
       }
     }
   }, []);
 
-  // Save contents to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('winmix-contents', JSON.stringify(contents));
   }, [contents]);
 
-  // *** JAVÍTÁS KEZDETE (addContent típusbiztonság) ***
   const addContent = (contentData: Omit<Content, 'id' | 'order'>) => {
-    let newContent: Content; // Típus továbbra is Content
     const baseProps = {
-        id: uuidv4(),
-        order: contents.length, // Kezdeti sorrend a végén
+      id: uuidv4(),
+      order: contents.length,
     };
 
-    // Explicit objektum létrehozás minden típushoz
+    let newContent: Content;
+
     switch(contentData.type) {
       case 'text':
-        const textInput = contentData as Partial<TextContent>;
         newContent = {
           ...baseProps,
           type: 'text',
-          content: textInput.content || '',
-        };
+          content: (contentData as Partial<TextContent>).content || '',
+        } as TextContent;
         break;
 
       case 'title':
-        const titleInput = contentData as Partial<TitleContent>;
         newContent = {
           ...baseProps,
           type: 'title',
-          content: titleInput.content || '',
-          level: titleInput.level || 2, // Alapértelmezett szint
-        };
+          content: (contentData as Partial<TitleContent>).content || '',
+          level: (contentData as Partial<TitleContent>).level || 2,
+        } as TitleContent;
         break;
 
       case 'table':
-         const tableInput = contentData as Partial<TableContent>;
         newContent = {
           ...baseProps,
           type: 'table',
-          headers: tableInput.headers || [],
-          rows: tableInput.rows || [],
-        };
+          headers: (contentData as Partial<TableContent>).headers || [],
+          rows: (contentData as Partial<TableContent>).rows || [],
+        } as TableContent;
         break;
 
       case 'button':
-        const buttonInput = contentData as Partial<ButtonContent>;
         newContent = {
           ...baseProps,
           type: 'button',
-          text: buttonInput.text || 'Gomb', // Alapértelmezett szöveg
-          url: buttonInput.url || '#', // Alapértelmezett URL
-          variant: buttonInput.variant || 'default', // Alapértelmezett variant
-        };
+          text: (contentData as Partial<ButtonContent>).text || 'Gomb',
+          url: (contentData as Partial<ButtonContent>).url || '#',
+          variant: (contentData as Partial<ButtonContent>).variant || 'default',
+        } as ButtonContent;
         break;
 
       case 'card':
-        const cardInput = contentData as Partial<CardContent>;
         newContent = {
           ...baseProps,
           type: 'card',
-          // A 'title' kötelező a CardContent-ben, biztosítjuk, hogy létezzen
-          title: cardInput.title || 'Cím nélkül', // Alapértelmezett cím
-          content: cardInput.content || '', // Alapértelmezett tartalom
-          imageUrl: cardInput.imageUrl, // Lehet undefined, ha nem kötelező
-        };
+          title: (contentData as Partial<CardContent>).title || 'Cím nélkül',
+          content: (contentData as Partial<CardContent>).content || '',
+          imageUrl: (contentData as Partial<CardContent>).imageUrl,
+        } as CardContent;
         break;
 
       case 'grid':
-        const gridInput = contentData as Partial<GridContent>;
         newContent = {
           ...baseProps,
           type: 'grid',
-          columns: gridInput.columns || 3, // Alapértelmezett oszlopszám
-          rows: gridInput.rows || 1, // Alapértelmezett sorszám (vagy lehet dinamikus?)
-          items: gridInput.items || [], // Alapértelmezett elemek
-        };
+          columns: (contentData as Partial<GridContent>).columns || 3,
+          rows: (contentData as Partial<GridContent>).rows || 1,
+          items: (contentData as Partial<GridContent>).items || [],
+        } as GridContent;
         break;
 
       default:
-        // Kezeljük az ismeretlen típust (bár a Content unió ezt elvileg megakadályozza)
         console.error(`Unknown content type: ${(contentData as any).type}`);
-        // Dobjunk hibát, vagy térjünk vissza anélkül, hogy módosítanánk az állapotot
         return;
-        // Vagy: throw new Error(`Unknown content type: ${(contentData as any).type}`);
     }
 
-    // A setContents hívás argumentuma most már biztosan Content[] típusú lesz
-    setContents(prev => [...prev, newContent]); // Nincs szükség típuskonverzióra itt
+    setContents(prev => [...prev, newContent]);
   };
-  // *** JAVÍTÁS VÉGE (addContent típusbiztonság) ***
 
-  // *** JAVÍTÁS KEZDETE (updateContent típusbiztonság) ***
-  // Módosítjuk a content paraméter típusát, hogy ne engedje a 'type' és 'order' módosítását itt.
-  // Az 'order'-t a reorderContent kezeli. A 'type'-ot általában nem akarjuk módosítani update-tel.
   const updateContent = (id: string, contentUpdate: Partial<Omit<Content, 'id' | 'type' | 'order'>>) => {
     setContents(prev =>
       prev.map(item => {
         if (item.id === id) {
-          // Fontos: Csak azokat a mezőket frissítjük, amik az adott típushoz tartoznak.
-          // A {...item, ...contentUpdate} működhet, de potenciálisan extra mezőket vihet be.
-          // Egy biztonságosabb megközelítés lenne típus-specifikus frissítés, de az bonyolultabb.
-          // Maradunk az egyszerűbb megoldásnál, de a contentUpdate típusa szigorúbb.
-          // Biztosítjuk, hogy a végeredmény megfeleljen a Content típusnak.
-          return { ...item, ...contentUpdate } as Content; // Típuskonverzió a biztonság kedvéért
+          return { ...item, ...contentUpdate } as Content;
         }
         return item;
       })
     );
   };
-  // *** JAVÍTÁS VÉGE (updateContent típusbiztonság) ***
-
 
   const deleteContent = (id: string) => {
     setContents(prev => {
       const filtered = prev.filter(item => item.id !== id);
-      // Újrarendezi a maradék elemeket a helyes 'order' értékekkel
       return filtered.map((item, index) => ({ ...item, order: index }));
     });
   };
 
   const reorderContent = (id: string, newOrder: number) => {
     setContents(prev => {
-      const items = [...prev]; // Másolat készítése a módosításhoz
+      const items = [...prev];
       const itemIndex = items.findIndex(item => item.id === id);
-      if (itemIndex === -1) return prev; // Elem nem található
+      if (itemIndex === -1) return prev;
 
-      const [movedItem] = items.splice(itemIndex, 1); // Elem eltávolítása
-
-      // Helyezzük be az új pozícióba
-      // Biztosítjuk, hogy newOrder a határokon belül maradjon
+      const [movedItem] = items.splice(itemIndex, 1);
       const targetOrder = Math.max(0, Math.min(newOrder, items.length));
       items.splice(targetOrder, 0, movedItem);
 
-      // Frissítsük az összes elem 'order' tulajdonságát a tömbben elfoglalt helyük alapján
       return items.map((item, index) => ({ ...item, order: index }));
     });
   };
@@ -195,7 +162,6 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <ContentContext.Provider
       value={{
-        // A rendezést itt is meghagyjuk, hogy a kontextusból mindig rendezett lista jöjjön
         contents: [...contents].sort((a, b) => a.order - b.order),
         addContent,
         updateContent,
