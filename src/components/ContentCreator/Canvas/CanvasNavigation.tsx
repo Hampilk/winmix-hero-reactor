@@ -1,52 +1,99 @@
-import React, { useState } from 'react';
-import { useLayoutStore } from '@/store/layout';
-import { Slider, IconButton, Tooltip } from '@mui/material';
-import { ZoomIn, ZoomOut, Undo, Redo } from 'lucide-react';
 
-const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 2.0;
-const ZOOM_STEP = 0.1;
+import React, { useState, useRef, useEffect } from 'react';
+import { useContent } from '@/context/ContentContext';
 
-export const CanvasNavigation: React.FC = () => {
-  const { zoomLevel, setZoom, undo, redo } = useLayoutStore();
-  const [sliderValue, setSliderValue] = useState(zoomLevel);
+interface CanvasNavigationProps {
+  children: React.ReactNode;
+  canvasRef: React.RefObject<HTMLDivElement>;
+}
 
-  const handleZoomChange = (event: Event, value: number | number[]) => {
-    const zoom = Array.isArray(value) ? value[0] : value;
-    setSliderValue(zoom);
-    setZoom(zoom);
+export const CanvasNavigation: React.FC<CanvasNavigationProps> = ({ children, canvasRef }) => {
+  const { zoomLevel, focusedContentId } = useContent();
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 2 || e.button === 1) {
+        e.preventDefault();
+        setIsDragging(true);
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        const dx = e.clientX - dragStart.x;
+        const dy = e.clientY - dragStart.y;
+        setCanvasOffset(prev => ({
+          x: prev.x + dx,
+          y: prev.y + dy
+        }));
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    const canvas = canvasRef.current;
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel);
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [isDragging, dragStart, canvasRef]);
+
+  useEffect(() => {
+    if (focusedContentId && canvasRef.current) {
+      setCanvasOffset({ x: 0, y: 0 });
+    }
+  }, [focusedContentId, canvasRef]);
+
+  const canvasStyle: React.CSSProperties = {
+    transform: `scale(${zoomLevel}) translate(${canvasOffset.x / zoomLevel}px, ${canvasOffset.y / zoomLevel}px)`,
+    transformOrigin: 'center center',
+    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
   };
 
   return (
-    <div className="flex space-x-4">
-      <Tooltip title="Undo">
-        <IconButton onClick={undo} aria-label="Undo">
-          <Undo />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Redo">
-        <IconButton onClick={redo} aria-label="Redo">
-          <Redo />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Zoom Out">
-        <IconButton onClick={() => setZoom(Math.max(zoomLevel - ZOOM_STEP, MIN_ZOOM))} aria-label="Zoom Out">
-          <ZoomOut />
-        </IconButton>
-      </Tooltip>
-      <Slider
-        value={sliderValue}
-        onChange={handleZoomChange}
-        min={MIN_ZOOM}
-        max={MAX_ZOOM}
-        step={ZOOM_STEP}
-        aria-label="Zoom Level"
-      />
-      <Tooltip title="Zoom In">
-        <IconButton onClick={() => setZoom(Math.min(zoomLevel + ZOOM_STEP, MAX_ZOOM))} aria-label="Zoom In">
-          <ZoomIn />
-        </IconButton>
-      </Tooltip>
+    <div
+      className="relative w-full h-[calc(100vh-200px)] overflow-hidden bg-gray-100 dark:bg-gray-900"
+      style={{ cursor: isDragging ? 'grabbing' : 'default' }}
+    >
+      <div
+        ref={canvasRef}
+        className="absolute w-full h-full"
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-transform"
+          style={canvasStyle}
+        >
+          {children}
+        </div>
+      </div>
     </div>
   );
 };

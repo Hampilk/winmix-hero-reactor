@@ -1,41 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import HeroReactor from './components/HeroReactor';
-import WinMixMouse from './components/WinMixMouse';
-import { INITIAL_LOADING_DELAY_MS } from './constants';
+
+import { Route, Routes } from "react-router-dom";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import { Toaster } from "./components/ui/toaster";
+import { ThemeProvider } from "next-themes";
+import PresentationEditor from "./pages/PresentationEditor";
 
 function App() {
-  const [isHeroReady, setIsHeroReady] = useState(false);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setIsHeroReady(true);
-    }, INITIAL_LOADING_DELAY_MS);
-
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, []);
-
-  const handleComplete = () => {
-    console.log('HeroReactor completed');
-    // Add additional logic here (e.g., navigation, state updates)
-  };
-
-  const isDebugMode = import.meta.env.DEV; // Adjust based on your build tool
-
-  if (!isHeroReady) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        Loading...
-      </div>
-    );
-  }
-
   return (
-    <div className="h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-300">
-      <HeroReactor onComplete={handleComplete} isDebug={isDebugMode} />
-      <WinMixMouse />
-    </div>
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="dark" 
+      enableSystem
+    >
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/presentation" element={<PresentationEditor />} />
+        <Route path="/presentation/:id" element={<PresentationEditor />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
+    </ThemeProvider>
   );
 }
 
