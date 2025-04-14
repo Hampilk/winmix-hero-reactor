@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Content, ContentType, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,7 +36,7 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
             id: newId,
             order: newOrder,
             type: 'text',
-            content: (contentData as Partial<TextContent>).content || ''
+            content: contentData.content || ''
           } as TextContent;
           break;
         case 'title':
@@ -45,7 +44,7 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
             id: newId,
             order: newOrder,
             type: 'title',
-            content: (contentData as Partial<TitleContent>).content || '',
+            content: contentData.content || '',
             level: (contentData as Partial<TitleContent>).level || 2
           } as TitleContent;
           break;
@@ -89,16 +88,8 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
           } as GridContent;
           break;
         default: {
-          // Properly handle exhaustive type checking
-          const exhaustiveCheck: never = contentData.type;
-          console.error(`Unhandled content type: ${String(exhaustiveCheck)}`);
-          // Fallback for runtime safety - create a default text content
-          newContent = {
-            id: newId,
-            order: newOrder,
-            type: 'text',
-            content: ''
-          } as TextContent;
+          const exhaustiveCheck: ContentType = contentData.type;
+          throw new Error(`Unhandled content type: ${exhaustiveCheck}`);
         }
       }
       
@@ -117,7 +108,6 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
   const deleteContent = useCallback((id: string) => {
     setContents(prevContents => {
       const filteredContents = prevContents.filter(content => content.id !== id);
-      // Reorder remaining contents
       return filteredContents.map((content, index) => ({
         ...content,
         order: index,
