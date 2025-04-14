@@ -89,10 +89,10 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
           } as GridContent;
           break;
         default: {
-          // Type narrowing for exhaustiveness checking
-          const exhaustiveCheck: never = contentData.type;
-          console.error(`Unhandled content type: ${exhaustiveCheck}`);
-          // Return a safe default with required properties to prevent runtime errors
+          // This is a proper way to handle exhaustiveness checking in TypeScript
+          const _exhaustiveCheck: never = contentData.type;
+          console.error(`Unhandled content type: ${contentData.type as string}`);
+          // Fallback for runtime safety - create a default text content
           newContent = {
             id: newId,
             order: newOrder,
