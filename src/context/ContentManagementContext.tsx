@@ -37,7 +37,7 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
             id: newId,
             order: newOrder,
             type: 'text',
-            content: contentData.content || ''
+            content: (contentData as Partial<TextContent>).content || ''
           } as TextContent;
           break;
         case 'title':
@@ -45,7 +45,7 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
             id: newId,
             order: newOrder,
             type: 'title',
-            content: contentData.content || '',
+            content: (contentData as Partial<TitleContent>).content || '',
             level: (contentData as Partial<TitleContent>).level || 2
           } as TitleContent;
           break;
@@ -88,8 +88,10 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
             items: (contentData as Partial<GridContent>).items || []
           } as GridContent;
           break;
-        default:
-          console.error(`Unhandled content type: ${contentData.type}`);
+        default: {
+          // Type narrowing for exhaustiveness checking
+          const exhaustiveCheck: never = contentData.type;
+          console.error(`Unhandled content type: ${exhaustiveCheck}`);
           // Return a safe default with required properties to prevent runtime errors
           newContent = {
             id: newId,
@@ -97,6 +99,7 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
             type: 'text',
             content: ''
           } as TextContent;
+        }
       }
       
       return [...prevContents, newContent];
