@@ -1,156 +1,114 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Content, ContentType, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 
-// Define the context type
-interface ContentManagementContextType {
-  contents: Content[];
-  addContent: (content: Partial<Content> & { type: ContentType }) => void;
-  updateContent: (id: string, content: Partial<Content>) => void;
-  deleteContent: (id: string) => void;
-  reorderContent: (id: string, newOrder: number) => void;
-  focusedContentId: string | null;
-  setFocusedContentId: (id: string | null) => void;
-  editMode: boolean;
-  setEditMode: (mode: boolean) => void;
-  zoomLevel: number;
-  setZoomLevel: (level: number) => void;
+interface Element {
+  id: string;
+  type: string;
+  [key: string]: any; // Extendable properties for different element types
 }
 
-// Create the context
-const ContentManagementContext = createContext<ContentManagementContextType | undefined>(undefined);
+interface ContentManagementContextProps {
+  elements: Element[];
+  selectedElement: Element | null;
+  addElement: (elementData: Omit<Element, 'id'>) => void;
+  updateElement: (id: string, updates: Partial<Element>) => void;
+  deleteElement: (id: string) => void;
+  selectElement: (id: string) => void;
+  clearSelection: () => void;
+  undo: () => void;
+  redo: () => void;
+}
 
-// Provider Component
+const ContentManagementContext = createContext<ContentManagementContextProps | undefined>(undefined);
+
+const PERSISTENCE_KEY = 'contentManagementState';
+
 export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [contents, setContents] = useState<Content[]>([]);
-  const [focusedContentId, setFocusedContentId] = useState<string | null>(null);
-  const [editMode, setEditMode] = useState<boolean>(false);
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [elements, setElements] = useState<Element[]>(() => {
+    const persistedState = localStorage.getItem(PERSISTENCE_KEY);
+    return persistedState ? JSON.parse(persistedState) : [];
+  });
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [history, setHistory] = useState<Element[][]>([[]]);
+  const [historyIndex, setHistoryIndex] = useState(0);
 
-  // Add content
-  const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
-    const newId = uuidv4();
-    const newOrder = contents.length;
+  // Persist state to localStorage
+  useEffect(() => {
+    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(elements));
+  }, [elements]);
 
-    // Dynamically create content based on its type
-    const newContent: Content = (() => {
-      switch (contentData.type) {
-        case 'text':
-          return { id: newId, order: newOrder, type: 'text', content: contentData.content || '' } as TextContent;
-        case 'title':
-          return {
-            id: newId,
-            order: newOrder,
-            type: 'title',
-            content: contentData.content || '',
-            level: (contentData as Partial<TitleContent>).level || 2,
-          } as TitleContent;
-        case 'table':
-          return {
-            id: newId,
-            order: newOrder,
-            type: 'table',
-            headers: (contentData as Partial<TableContent>).headers || [],
-            rows: (contentData as Partial<TableContent>).rows || [],
-          } as TableContent;
-        case 'button':
-          return {
-            id: newId,
-            order: newOrder,
-            type: 'button',
-            text: (contentData as Partial<ButtonContent>).text || '',
-            url: (contentData as Partial<ButtonContent>).url || '',
-            variant: (contentData as Partial<ButtonContent>).variant || 'default',
-          } as ButtonContent;
-        case 'card':
-          return {
-            id: newId,
-            order: newOrder,
-            type: 'card',
-            title: (contentData as Partial<CardContent>).title || '',
-            content: (contentData as Partial<CardContent>).content || '',
-            imageUrl: (contentData as Partial<CardContent>).imageUrl || '',
-          } as CardContent;
-        case 'grid':
-          return {
-            id: newId,
-            order: newOrder,
-            type: 'grid',
-            columns: (contentData as Partial<GridContent>).columns || 3,
-            rows: (contentData as Partial<GridContent>).rows || 3,
-            items: (contentData as Partial<GridContent>).items || [],
-          } as GridContent;
-        default:
-          throw new Error(`Unhandled content type: ${contentData.type}`);
-      }
-    })();
+  // Undo functionality
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex((prev) => prev - 1);
+      setElements(history[historyIndex - 1]);
+    }
+  }, [history, historyIndex]);
 
-    // Update state
-    setContents((prevContents) => [...prevContents, newContent]);
-  }, [contents]);
+  // Redo functionality
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex((prev) => prev + 1);
+      setElements(history[historyIndex + 1]);
+    }
+  }, [history, historyIndex]);
 
-  // Update content
-  const updateContent = useCallback((id: string, contentUpdate: Partial<Content>) => {
-    setContents((prevContents) =>
-      prevContents.map((content) =>
-        content.id === id ? { ...content, ...contentUpdate } : content
-      )
+  // Add element
+  const addElement = useCallback((elementData: Omit<Element, 'id'>) => {
+    const newElement: Element = { id: uuidv4(), ...elementData };
+    const newElements = [...elements, newElement];
+    setElements(newElements);
+    setHistory((prev) => [...prev.slice(0, historyIndex + 1), newElements]);
+    setHistoryIndex((prev) => prev + 1);
+  }, [elements, history, historyIndex]);
+
+  // Update element
+  const updateElement = useCallback((id: string, updates: Partial<Element>) => {
+    const newElements = elements.map((element) =>
+      element.id === id ? { ...element, ...updates } : element
     );
+    setElements(newElements);
+    setHistory((prev) => [...prev.slice(0, historyIndex + 1), newElements]);
+    setHistoryIndex((prev) => prev + 1);
+  }, [elements, history, historyIndex]);
+
+  // Delete element
+  const deleteElement = useCallback((id: string) => {
+    const newElements = elements.filter((element) => element.id !== id);
+    setElements(newElements);
+    setHistory((prev) => [...prev.slice(0, historyIndex + 1), newElements]);
+    setHistoryIndex((prev) => prev + 1);
+  }, [elements, history, historyIndex]);
+
+  // Select an element
+  const selectElement = useCallback((id: string) => {
+    setSelectedElementId(id);
   }, []);
 
-  // Delete content
-  const deleteContent = useCallback((id: string) => {
-    setContents((prevContents) =>
-      prevContents
-        .filter((content) => content.id !== id) // Remove the content
-        .map((content, index) => ({ ...content, order: index })) // Reorder remaining contents
-    );
+  // Clear selection
+  const clearSelection = useCallback(() => {
+    setSelectedElementId(null);
   }, []);
 
-  // Reorder content
-  const reorderContent = useCallback((id: string, newOrder: number) => {
-    setContents((prevContents) => {
-      const contentToMove = prevContents.find((content) => content.id === id);
-      if (!contentToMove) {
-        console.error(`Content with id ${id} not found.`);
-        return prevContents;
-      }
-
-      // Remove the item and reinsert it at the new position
-      const reorderedContents = prevContents
-        .filter((content) => content.id !== id)
-        .sort((a, b) => a.order - b.order);
-
-      reorderedContents.splice(newOrder, 0, { ...contentToMove, order: newOrder });
-
-      // Reorder all items sequentially
-      return reorderedContents.map((content, index) => ({ ...content, order: index }));
-    });
-  }, []);
-
-  // Memoized context value
   const value = useMemo(
     () => ({
-      contents,
-      addContent,
-      updateContent,
-      deleteContent,
-      reorderContent,
-      focusedContentId,
-      setFocusedContentId,
-      editMode,
-      setEditMode,
-      zoomLevel,
-      setZoomLevel,
+      elements,
+      selectedElement: elements.find((element) => element.id === selectedElementId) || null,
+      addElement,
+      updateElement,
+      deleteElement,
+      selectElement,
+      clearSelection,
+      undo,
+      redo
     }),
-    [contents, addContent, updateContent, deleteContent, reorderContent, focusedContentId, editMode, zoomLevel]
+    [elements, selectedElementId, addElement, updateElement, deleteElement, selectElement, clearSelection, undo, redo]
   );
 
   return <ContentManagementContext.Provider value={value}>{children}</ContentManagementContext.Provider>;
 };
 
-// Hook for consuming the context
-export const useContentManagement = () => {
+export const useContentManagement = (): ContentManagementContextProps => {
   const context = useContext(ContentManagementContext);
   if (!context) {
     throw new Error('useContentManagement must be used within a ContentManagementProvider');
