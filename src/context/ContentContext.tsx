@@ -85,7 +85,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             type: 'button',
             text: (contentData as Partial<ButtonContent>).text || '',
             url: (contentData as Partial<ButtonContent>).url || '',
-            variant: (contentData as Partial<ButtonContent>).variant,
+            variant: (contentData as Partial<ButtonContent>).variant || 'default',
           } as ButtonContent;
           break;
         case 'card':
@@ -109,9 +109,9 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           } as GridContent;
           break;
         default: {
-          // Type-safe exhaustive check
-          const _exhaustiveCheck: never = contentData.type;
-          throw new Error(`Unhandled content type: ${String(contentData.type)}`);
+          // Use a type assertion to handle the exhaustive check
+          const exhaustiveCheck: never = contentData.type;
+          throw new Error(`Unhandled content type: ${exhaustiveCheck}`);
         }
       }
       
