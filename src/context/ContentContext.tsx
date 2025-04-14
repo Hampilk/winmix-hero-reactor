@@ -47,41 +47,41 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
     setContents(prevContents => {
-      // Create a properly typed new content based on the type
       const { type } = contentData;
+      let newContent: Content;
       
       switch (type) {
         case 'text': {
-          const newContent: TextContent = {
+          newContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'text',
             content: contentData.content || '',
           };
-          return [...prevContents, newContent];
+          break;
         }
         case 'title': {
-          const newContent: TitleContent = {
+          newContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'title',
             content: contentData.content || '',
             level: (contentData as Partial<TitleContent>).level || 2,
           };
-          return [...prevContents, newContent];
+          break;
         }
         case 'table': {
-          const newContent: TableContent = {
+          newContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'table',
             headers: (contentData as Partial<TableContent>).headers || [],
             rows: (contentData as Partial<TableContent>).rows || [],
           };
-          return [...prevContents, newContent];
+          break;
         }
         case 'button': {
-          const newContent: ButtonContent = {
+          newContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'button',
@@ -89,10 +89,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             url: (contentData as Partial<ButtonContent>).url || '',
             variant: (contentData as Partial<ButtonContent>).variant || 'default',
           };
-          return [...prevContents, newContent];
+          break;
         }
         case 'card': {
-          const newContent: CardContent = {
+          newContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'card',
@@ -100,10 +100,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             content: (contentData as Partial<CardContent>).content || '',
             imageUrl: (contentData as Partial<CardContent>).imageUrl,
           };
-          return [...prevContents, newContent];
+          break;
         }
         case 'grid': {
-          const newContent: GridContent = {
+          newContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'grid',
@@ -111,7 +111,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
             rows: (contentData as Partial<GridContent>).rows || 3,
             items: (contentData as Partial<GridContent>).items || [],
           };
-          return [...prevContents, newContent];
+          break;
         }
         default: {
           // Type-safe exhaustive check
@@ -119,6 +119,8 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
           throw new Error(`Unhandled content type: ${String(type)}`);
         }
       }
+      
+      return [...prevContents, newContent];
     });
   }, []);
 
