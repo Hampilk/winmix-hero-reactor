@@ -27,75 +27,79 @@ export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> 
 
   const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
     setContents(prevContents => {
-      const { type } = contentData;
+      const newOrder = prevContents.length;
+      const newId = uuidv4();
+      let newContent: Content;
       
-      if (type === 'text') {
-        const newContent: TextContent = {
-          id: uuidv4(),
-          order: prevContents.length,
-          type: 'text',
-          content: contentData.content || '',
-        };
-        return [...prevContents, newContent];
-      } 
-      else if (type === 'title') {
-        const newContent: TitleContent = {
-          id: uuidv4(),
-          order: prevContents.length,
-          type: 'title',
-          content: contentData.content || '',
-          level: (contentData as Partial<TitleContent>).level || 2,
-        };
-        return [...prevContents, newContent];
-      } 
-      else if (type === 'table') {
-        const newContent: TableContent = {
-          id: uuidv4(),
-          order: prevContents.length,
-          type: 'table',
-          headers: (contentData as Partial<TableContent>).headers || [],
-          rows: (contentData as Partial<TableContent>).rows || [],
-        };
-        return [...prevContents, newContent];
-      } 
-      else if (type === 'button') {
-        const newContent: ButtonContent = {
-          id: uuidv4(),
-          order: prevContents.length,
-          type: 'button',
-          text: (contentData as Partial<ButtonContent>).text || '',
-          url: (contentData as Partial<ButtonContent>).url || '',
-          variant: (contentData as Partial<ButtonContent>).variant || 'default',
-        };
-        return [...prevContents, newContent];
-      } 
-      else if (type === 'card') {
-        const newContent: CardContent = {
-          id: uuidv4(),
-          order: prevContents.length,
-          type: 'card',
-          title: (contentData as Partial<CardContent>).title || '',
-          content: (contentData as Partial<CardContent>).content || '',
-          imageUrl: (contentData as Partial<CardContent>).imageUrl,
-        };
-        return [...prevContents, newContent];
-      } 
-      else if (type === 'grid') {
-        const newContent: GridContent = {
-          id: uuidv4(),
-          order: prevContents.length,
-          type: 'grid',
-          columns: (contentData as Partial<GridContent>).columns || 3,
-          rows: (contentData as Partial<GridContent>).rows || 3,
-          items: (contentData as Partial<GridContent>).items || [],
-        };
-        return [...prevContents, newContent];
-      } 
-      else {
-        // This should never happen with proper ContentType definition
-        console.error(`Unhandled content type: ${type}`);
-        return prevContents;
+      switch (contentData.type) {
+        case 'text':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'text',
+            content: contentData.content || ''
+          } as TextContent;
+          break;
+        case 'title':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'title',
+            content: contentData.content || '',
+            level: (contentData as Partial<TitleContent>).level || 2
+          } as TitleContent;
+          break;
+        case 'table':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'table',
+            headers: (contentData as Partial<TableContent>).headers || [],
+            rows: (contentData as Partial<TableContent>).rows || []
+          } as TableContent;
+          break;
+        case 'button':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'button',
+            text: (contentData as Partial<ButtonContent>).text || '',
+            url: (contentData as Partial<ButtonContent>).url || '',
+            variant: (contentData as Partial<ButtonContent>).variant || 'default'
+          } as ButtonContent;
+          break;
+        case 'card':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'card',
+            title: (contentData as Partial<CardContent>).title || '',
+            content: (contentData as Partial<CardContent>).content || '',
+            imageUrl: (contentData as Partial<CardContent>).imageUrl
+          } as CardContent;
+          break;
+        case 'grid':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'grid',
+            columns: (contentData as Partial<GridContent>).columns || 3,
+            rows: (contentData as Partial<GridContent>).rows || 3,
+            items: (contentData as Partial<GridContent>).items || []
+          } as GridContent;
+          break;
+        default:
+          console.error(`Unhandled content type: ${contentData.type}`);
+          // Return a safe default with required properties to prevent runtime errors
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'text',
+            content: ''
+          } as TextContent;
       }
+      
+      return [...prevContents, newContent];
     });
   }, []);
 
