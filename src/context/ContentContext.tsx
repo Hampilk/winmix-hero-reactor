@@ -49,7 +49,7 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setContents(prevContents => {
       const { type } = contentData;
       
-      // Use type casting to ensure type safety
+      // Create appropriate content based on type
       if (type === 'text') {
         const newContent: TextContent = {
           id: uuidv4(),
@@ -113,9 +113,11 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return [...prevContents, newContent];
       } 
       else {
-        // Type-safe exhaustive check
+        // To satisfy exhaustive type checking, but this should never happen
+        // with proper ContentType definition
         const _exhaustiveCheck: never = type;
-        throw new Error(`Unhandled content type: ${String(type)}`);
+        console.error(`Unhandled content type: ${type}`);
+        return prevContents;
       }
     });
   }, []);
