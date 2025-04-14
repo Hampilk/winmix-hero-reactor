@@ -1,21 +1,19 @@
-import React from 'react';
-import { ContentDisplay } from '@/components/ContentCreator/ContentDisplay';
-import { ContentProvider } from '@/context/ContentContext';
-import { useParams } from 'react-router-dom';
+
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const { id } = useParams();
-  const isNewPresentation = !id;
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Redirect to the presentation editor
+    navigate('/presentation');
+  }, [navigate]);
 
   return (
-    <ContentProvider>
-      <div className="h-screen flex flex-col bg-background">
-        <ContentDisplay 
-          presentationId={id} 
-          isNewPresentation={isNewPresentation}
-        />
-      </div>
-    </ContentProvider>
+    <div className="h-screen flex items-center justify-center bg-background text-foreground">
+      <p>Redirecting to presentation editor...</p>
+    </div>
   );
 };
 
