@@ -1,35 +1,31 @@
+
 import React from 'react';
-import { useDrop } from 'react-dnd';
-import { useLayoutStore } from '@/store/layout';
+import { useContent } from '@/context/ContentContext';
 import { ContentItem } from './ContentItem';
 
-interface DroppedAsset {
-  id: string;
-  type: string;
-  [key: string]: unknown;
-}
-
 export const ContentList: React.FC = () => {
-  const { layout, addItem } = useLayoutStore();
+  const { contents, editMode } = useContent();
 
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: 'ASSET',
-    drop: (item: DroppedAsset) => {
-      try {
-        addItem(item);
-      } catch (error) {
-        console.error('Failed to add item:', error);
-      }
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  }));
+  if (contents.length === 0 && !editMode) {
+    return (
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <p>Még nincs tartalom.</p>
+      </div>
+    );
+  }
+
+  if (contents.length === 0 && editMode) {
+    return (
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <p>Adj hozzá új tartalmat a vászonvezérlőkkel.</p>
+      </div>
+    );
+  }
 
   return (
-    <div ref={drop} className={`relative ${isOver ? 'bg-blue-100' : ''}`}>
-      {layout.items.map((item) => (
-        <ContentItem key={item.id} item={item} />
+    <div className="p-4 space-y-6 max-w-4xl mx-auto">
+      {contents.map((content) => (
+        <ContentItem key={content.id} content={content} />
       ))}
     </div>
   );

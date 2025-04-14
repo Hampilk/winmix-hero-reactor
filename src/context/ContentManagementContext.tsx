@@ -1,116 +1,166 @@
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { Content, ContentType, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
 
-interface Element {
-  id: string;
-  type: string;
-  [key: string]: any; // Extendable properties for different element types
+interface ContentManagementContextType {
+  contents: Content[];
+  addContent: (content: Partial<Content> & { type: ContentType }) => void;
+  updateContent: (id: string, content: Partial<Content>) => void;
+  deleteContent: (id: string) => void;
+  reorderContent: (id: string, newOrder: number) => void;
+  focusedContentId: string | null;
+  setFocusedContentId: (id: string | null) => void;
+  editMode: boolean;
+  setEditMode: (mode: boolean) => void;
+  zoomLevel: number;
+  setZoomLevel: (level: number) => void;
 }
 
-interface ContentManagementContextProps {
-  elements: Element[];
-  selectedElement: Element | null;
-  addElement: (elementData: Omit<Element, 'id'>) => void;
-  updateElement: (id: string, updates: Partial<Element>) => void;
-  deleteElement: (id: string) => void;
-  selectElement: (id: string) => void;
-  clearSelection: () => void;
-  undo: () => void;
-  redo: () => void;
-}
-
-const ContentManagementContext = createContext<ContentManagementContextProps | undefined>(undefined);
-
-const PERSISTENCE_KEY = 'contentManagementState';
+const ContentManagementContext = createContext<ContentManagementContextType | undefined>(undefined);
 
 export const ContentManagementProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [elements, setElements] = useState<Element[]>(() => {
-    const persistedState = localStorage.getItem(PERSISTENCE_KEY);
-    return persistedState ? JSON.parse(persistedState) : [];
-  });
-  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  const [history, setHistory] = useState<Element[][]>([[]]);
-  const [historyIndex, setHistoryIndex] = useState(0);
+  const [contents, setContents] = useState<Content[]>([]);
+  const [focusedContentId, setFocusedContentId] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
-  // Persist state to localStorage
-  useEffect(() => {
-    localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(elements));
-  }, [elements]);
+  const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
+    setContents(prevContents => {
+      const newOrder = prevContents.length;
+      const newId = uuidv4();
+      let newContent: Content;
+      
+      switch (contentData.type) {
+        case 'text':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'text',
+            content: contentData.content || ''
+          } as TextContent;
+          break;
+        case 'title':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'title',
+            content: contentData.content || '',
+            level: (contentData as Partial<TitleContent>).level || 2
+          } as TitleContent;
+          break;
+        case 'table':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'table',
+            headers: (contentData as Partial<TableContent>).headers || [],
+            rows: (contentData as Partial<TableContent>).rows || []
+          } as TableContent;
+          break;
+        case 'button':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'button',
+            text: (contentData as Partial<ButtonContent>).text || '',
+            url: (contentData as Partial<ButtonContent>).url || '',
+            variant: (contentData as Partial<ButtonContent>).variant || 'default'
+          } as ButtonContent;
+          break;
+        case 'card':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'card',
+            title: (contentData as Partial<CardContent>).title || '',
+            content: (contentData as Partial<CardContent>).content || '',
+            imageUrl: (contentData as Partial<CardContent>).imageUrl
+          } as CardContent;
+          break;
+        case 'grid':
+          newContent = {
+            id: newId,
+            order: newOrder,
+            type: 'grid',
+            columns: (contentData as Partial<GridContent>).columns || 3,
+            rows: (contentData as Partial<GridContent>).rows || 3,
+            items: (contentData as Partial<GridContent>).items || []
+          } as GridContent;
+          break;
+        default: {
+          const exhaustiveCheck: ContentType = contentData.type;
+          throw new Error(`Unhandled content type: ${exhaustiveCheck}`);
+        }
+      }
+      
+      return [...prevContents, newContent];
+    });
+  }, []);
 
-  // Undo functionality
-  const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      setHistoryIndex((prev) => prev - 1);
-      setElements(history[historyIndex - 1]);
-    }
-  }, [history, historyIndex]);
-
-  // Redo functionality
-  const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex((prev) => prev + 1);
-      setElements(history[historyIndex + 1]);
-    }
-  }, [history, historyIndex]);
-
-  // Add element
-  const addElement = useCallback((elementData: Omit<Element, 'id'>) => {
-    const newElement: Element = { id: uuidv4(), ...elementData };
-    const newElements = [...elements, newElement];
-    setElements(newElements);
-    setHistory((prev) => [...prev.slice(0, historyIndex + 1), newElements]);
-    setHistoryIndex((prev) => prev + 1);
-  }, [elements, history, historyIndex]);
-
-  // Update element
-  const updateElement = useCallback((id: string, updates: Partial<Element>) => {
-    const newElements = elements.map((element) =>
-      element.id === id ? { ...element, ...updates } : element
+  const updateContent = useCallback((id: string, contentUpdate: Partial<Content>) => {
+    setContents(prevContents =>
+      prevContents.map(content =>
+        content.id === id ? { ...content, ...contentUpdate } : content
+      )
     );
-    setElements(newElements);
-    setHistory((prev) => [...prev.slice(0, historyIndex + 1), newElements]);
-    setHistoryIndex((prev) => prev + 1);
-  }, [elements, history, historyIndex]);
-
-  // Delete element
-  const deleteElement = useCallback((id: string) => {
-    const newElements = elements.filter((element) => element.id !== id);
-    setElements(newElements);
-    setHistory((prev) => [...prev.slice(0, historyIndex + 1), newElements]);
-    setHistoryIndex((prev) => prev + 1);
-  }, [elements, history, historyIndex]);
-
-  // Select an element
-  const selectElement = useCallback((id: string) => {
-    setSelectedElementId(id);
   }, []);
 
-  // Clear selection
-  const clearSelection = useCallback(() => {
-    setSelectedElementId(null);
+  const deleteContent = useCallback((id: string) => {
+    setContents(prevContents => {
+      const filteredContents = prevContents.filter(content => content.id !== id);
+      return filteredContents.map((content, index) => ({
+        ...content,
+        order: index,
+      }));
+    });
   }, []);
 
-  const value = useMemo(
-    () => ({
-      elements,
-      selectedElement: elements.find((element) => element.id === selectedElementId) || null,
-      addElement,
-      updateElement,
-      deleteElement,
-      selectElement,
-      clearSelection,
-      undo,
-      redo
-    }),
-    [elements, selectedElementId, addElement, updateElement, deleteElement, selectElement, clearSelection, undo, redo]
-  );
+  const reorderContent = useCallback((id: string, newOrder: number) => {
+    setContents(prevContents => {
+      const contentToMove = prevContents.find(content => content.id === id);
+      if (!contentToMove) return prevContents;
+
+      const oldOrder = contentToMove.order;
+      if (oldOrder === newOrder) return prevContents;
+
+      return prevContents.map(content => {
+        if (content.id === id) {
+          return { ...content, order: newOrder };
+        } else if (
+          (oldOrder < newOrder && content.order > oldOrder && content.order <= newOrder) ||
+          (oldOrder > newOrder && content.order < oldOrder && content.order >= newOrder)
+        ) {
+          return {
+            ...content,
+            order: oldOrder < newOrder ? content.order - 1 : content.order + 1,
+          };
+        } else {
+          return content;
+        }
+      });
+    });
+  }, []);
+
+  const value = {
+    contents,
+    addContent,
+    updateContent,
+    deleteContent,
+    reorderContent,
+    focusedContentId,
+    setFocusedContentId,
+    editMode,
+    setEditMode,
+    zoomLevel,
+    setZoomLevel,
+  };
 
   return <ContentManagementContext.Provider value={value}>{children}</ContentManagementContext.Provider>;
 };
 
-export const useContentManagement = (): ContentManagementContextProps => {
+export const useContentManagement = () => {
   const context = useContext(ContentManagementContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useContentManagement must be used within a ContentManagementProvider');
   }
   return context;
