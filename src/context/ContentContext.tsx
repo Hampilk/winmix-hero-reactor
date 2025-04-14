@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Content, ContentType, TextContent, TitleContent, TableContent, ButtonContent, CardContent, GridContent } from '@/types/content';
 import { v4 as uuidv4 } from 'uuid';
@@ -49,73 +48,77 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
     setContents(prevContents => {
       // Create a properly typed new content based on the type
-      let newContent: Content;
+      const { type } = contentData;
       
-      switch (contentData.type) {
-        case 'text':
-          newContent = {
+      switch (type) {
+        case 'text': {
+          const newContent: TextContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'text',
             content: contentData.content || '',
-          } as TextContent;
-          break;
-        case 'title':
-          newContent = {
+          };
+          return [...prevContents, newContent];
+        }
+        case 'title': {
+          const newContent: TitleContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'title',
             content: contentData.content || '',
             level: (contentData as Partial<TitleContent>).level || 2,
-          } as TitleContent;
-          break;
-        case 'table':
-          newContent = {
+          };
+          return [...prevContents, newContent];
+        }
+        case 'table': {
+          const newContent: TableContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'table',
             headers: (contentData as Partial<TableContent>).headers || [],
             rows: (contentData as Partial<TableContent>).rows || [],
-          } as TableContent;
-          break;
-        case 'button':
-          newContent = {
+          };
+          return [...prevContents, newContent];
+        }
+        case 'button': {
+          const newContent: ButtonContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'button',
             text: (contentData as Partial<ButtonContent>).text || '',
             url: (contentData as Partial<ButtonContent>).url || '',
-            variant: (contentData as Partial<ButtonContent>).variant,
-          } as ButtonContent;
-          break;
-        case 'card':
-          newContent = {
+            variant: (contentData as Partial<ButtonContent>).variant || 'default',
+          };
+          return [...prevContents, newContent];
+        }
+        case 'card': {
+          const newContent: CardContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'card',
             title: (contentData as Partial<CardContent>).title || '',
             content: (contentData as Partial<CardContent>).content || '',
             imageUrl: (contentData as Partial<CardContent>).imageUrl,
-          } as CardContent;
-          break;
-        case 'grid':
-          newContent = {
+          };
+          return [...prevContents, newContent];
+        }
+        case 'grid': {
+          const newContent: GridContent = {
             id: uuidv4(),
             order: prevContents.length,
             type: 'grid',
             columns: (contentData as Partial<GridContent>).columns || 3,
             rows: (contentData as Partial<GridContent>).rows || 3,
             items: (contentData as Partial<GridContent>).items || [],
-          } as GridContent;
-          break;
+          };
+          return [...prevContents, newContent];
+        }
         default: {
           // Type-safe exhaustive check
-          const _exhaustiveCheck: never = contentData.type;
-          throw new Error(`Unhandled content type: ${String(contentData.type)}`);
+          const _exhaustiveCheck: never = type;
+          throw new Error(`Unhandled content type: ${String(type)}`);
         }
       }
-      
-      return [...prevContents, newContent];
     });
   }, []);
 
