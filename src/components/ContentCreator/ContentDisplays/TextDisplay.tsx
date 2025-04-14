@@ -1,17 +1,15 @@
-
 import React from 'react';
-import { TextContent } from '@/types/content';
+import { Typography } from '@mui/material';
 
 interface TextDisplayProps {
-  content: TextContent;
+  text: string;
+  variant?: 'body1' | 'body2' | 'subtitle1' | 'caption';
+  align?: 'inherit' | 'left' | 'center' | 'right' | 'justify';
   className?: string;
-  onClick?: () => void;
 }
 
-export const TextDisplay: React.FC<TextDisplayProps> = ({ content, className = '', onClick }) => {
-  return (
-    <div className={`prose prose-invert max-w-none ${className}`} onClick={onClick}>
-      <p className="whitespace-pre-wrap">{content.content}</p>
-    </div>
-  );
-};
+export const TextDisplay: React.FC<TextDisplayProps> = ({ text, variant = 'body1', align = 'inherit', className = '' }) => (
+  <Typography variant={variant} align={align} paragraph={true} className={className}>
+    {text}
+  </Typography>
+);

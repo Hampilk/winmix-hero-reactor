@@ -1,34 +1,51 @@
-
 import React from 'react';
-import { CardContent as CardContentType } from '@/types/content';
-import { Card, CardHeader, CardTitle, CardContent as CardContentUI } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent as CardContentUI, CardMedia, CardActions } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface CardDisplayProps {
-  content: CardContentType;
+  title: string;
+  description: string;
+  image?: string;
+  imageAlt?: string;
+  buttonText?: string;
+  buttonUrl?: string;
   className?: string;
-  onClick?: () => void;
 }
 
-export const CardDisplay: React.FC<CardDisplayProps> = ({ content, className = '', onClick }) => {
-  const { title, content: cardContent, imageUrl } = content;
-
+export const CardDisplay: React.FC<CardDisplayProps> = ({
+  title,
+  description,
+  image,
+  imageAlt = title,
+  buttonText,
+  buttonUrl,
+  className = '',
+}) => {
   return (
-    <Card className={`bg-gradient-to-br from-gray-900/60 to-gray-900/40 backdrop-blur-md border border-white/5 rounded-xl hover:border-blue-500/20 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] ${className}`} onClick={onClick}>
-      {imageUrl && (
-        <div className="w-full h-40 overflow-hidden rounded-t-xl">
-          <img 
-            src={imageUrl} 
-            alt={title} 
-            className="w-full h-full object-cover"
-          />
-        </div>
+    <Card className={`bg-gradient-to-br from-gray-900/60 to-gray-900/40 backdrop-blur-md border border-white/5 rounded-xl hover:border-blue-500/20 transition-all duration-300 hover:shadow-lg ${className}`}>
+      {image && (
+        <CardMedia
+          component="img"
+          height="140"
+          image={image}
+          alt={imageAlt}
+          loading="lazy"
+          className="rounded-t-xl"
+        />
       )}
       <CardHeader>
         <CardTitle className="text-white">{title}</CardTitle>
       </CardHeader>
       <CardContentUI>
-        <p className="text-gray-300 whitespace-pre-wrap">{cardContent}</p>
+        <p className="text-gray-300 whitespace-pre-wrap">{description}</p>
       </CardContentUI>
+      {buttonText && buttonUrl && (
+        <CardActions>
+          <Button href={buttonUrl} component="a" target="_blank" rel="noopener noreferrer" variant="contained">
+            {buttonText}
+          </Button>
+        </CardActions>
+      )}
     </Card>
   );
 };
