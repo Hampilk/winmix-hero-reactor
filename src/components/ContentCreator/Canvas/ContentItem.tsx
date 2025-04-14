@@ -1,30 +1,24 @@
 import React from 'react';
-import { useDrop } from 'react-dnd';
-import { useLayoutStore } from '@/store/layout';
-import { ContentItem } from './ContentItem';
+import { Rnd } from 'react-rnd';
 
-export const ContentList: React.FC = () => {
-  const { layout, addItem } = useLayoutStore();
+export const ContentItem: React.FC = ({ item }) => {
+  const { updateItem } = useLayoutStore();
 
-  const [{ isOver }, drop] = useDrop({
-    accept: 'ASSET',
-    drop: (item: any) => {
-      try {
-        addItem(item);
-      } catch (error) {
-        console.error('Failed to add item:', error);
-      }
-    },
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
+  const handleResizeStop = (e, direction, ref, delta, position) => {
+    updateItem(item.id, {
+      width: parseInt(ref.style.width, 10),
+      height: parseInt(ref.style.height, 10),
+      ...position,
+    });
+  };
 
   return (
-    <div ref={drop} className={`relative ${isOver ? 'bg-blue-100' : ''}`}>
-      {layout.items.map((item) => (
-        <ContentItem key={item.id} item={item} />
-      ))}
-    </div>
+    <Rnd
+      size={{ width: item.width, height: item.height }}
+      position={{ x: item.x, y: item.y }}
+      onResizeStop={handleResizeStop}
+    >
+      <div>{/* Render content here */}</div>
+    </Rnd>
   );
 };
