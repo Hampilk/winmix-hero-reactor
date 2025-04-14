@@ -48,79 +48,75 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addContent = useCallback((contentData: Partial<Content> & { type: ContentType }) => {
     setContents(prevContents => {
       const { type } = contentData;
-      let newContent: Content;
       
-      switch (type) {
-        case 'text': {
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: 'text',
-            content: contentData.content || '',
-          };
-          break;
-        }
-        case 'title': {
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: 'title',
-            content: contentData.content || '',
-            level: (contentData as Partial<TitleContent>).level || 2,
-          };
-          break;
-        }
-        case 'table': {
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: 'table',
-            headers: (contentData as Partial<TableContent>).headers || [],
-            rows: (contentData as Partial<TableContent>).rows || [],
-          };
-          break;
-        }
-        case 'button': {
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: 'button',
-            text: (contentData as Partial<ButtonContent>).text || '',
-            url: (contentData as Partial<ButtonContent>).url || '',
-            variant: (contentData as Partial<ButtonContent>).variant || 'default',
-          };
-          break;
-        }
-        case 'card': {
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: 'card',
-            title: (contentData as Partial<CardContent>).title || '',
-            content: (contentData as Partial<CardContent>).content || '',
-            imageUrl: (contentData as Partial<CardContent>).imageUrl,
-          };
-          break;
-        }
-        case 'grid': {
-          newContent = {
-            id: uuidv4(),
-            order: prevContents.length,
-            type: 'grid',
-            columns: (contentData as Partial<GridContent>).columns || 3,
-            rows: (contentData as Partial<GridContent>).rows || 3,
-            items: (contentData as Partial<GridContent>).items || [],
-          };
-          break;
-        }
-        default: {
-          // Type-safe exhaustive check
-          const _exhaustiveCheck: never = type;
-          throw new Error(`Unhandled content type: ${String(type)}`);
-        }
+      // Use type casting to ensure type safety
+      if (type === 'text') {
+        const newContent: TextContent = {
+          id: uuidv4(),
+          order: prevContents.length,
+          type: 'text',
+          content: contentData.content || '',
+        };
+        return [...prevContents, newContent];
+      } 
+      else if (type === 'title') {
+        const newContent: TitleContent = {
+          id: uuidv4(),
+          order: prevContents.length,
+          type: 'title',
+          content: contentData.content || '',
+          level: (contentData as Partial<TitleContent>).level || 2,
+        };
+        return [...prevContents, newContent];
+      } 
+      else if (type === 'table') {
+        const newContent: TableContent = {
+          id: uuidv4(),
+          order: prevContents.length,
+          type: 'table',
+          headers: (contentData as Partial<TableContent>).headers || [],
+          rows: (contentData as Partial<TableContent>).rows || [],
+        };
+        return [...prevContents, newContent];
+      } 
+      else if (type === 'button') {
+        const newContent: ButtonContent = {
+          id: uuidv4(),
+          order: prevContents.length,
+          type: 'button',
+          text: (contentData as Partial<ButtonContent>).text || '',
+          url: (contentData as Partial<ButtonContent>).url || '',
+          variant: (contentData as Partial<ButtonContent>).variant || 'default',
+        };
+        return [...prevContents, newContent];
+      } 
+      else if (type === 'card') {
+        const newContent: CardContent = {
+          id: uuidv4(),
+          order: prevContents.length,
+          type: 'card',
+          title: (contentData as Partial<CardContent>).title || '',
+          content: (contentData as Partial<CardContent>).content || '',
+          imageUrl: (contentData as Partial<CardContent>).imageUrl,
+        };
+        return [...prevContents, newContent];
+      } 
+      else if (type === 'grid') {
+        const newContent: GridContent = {
+          id: uuidv4(),
+          order: prevContents.length,
+          type: 'grid',
+          columns: (contentData as Partial<GridContent>).columns || 3,
+          rows: (contentData as Partial<GridContent>).rows || 3,
+          items: (contentData as Partial<GridContent>).items || [],
+        };
+        return [...prevContents, newContent];
+      } 
+      else {
+        // Type-safe exhaustive check
+        const _exhaustiveCheck: never = type;
+        throw new Error(`Unhandled content type: ${String(type)}`);
       }
-      
-      return [...prevContents, newContent];
     });
   }, []);
 
