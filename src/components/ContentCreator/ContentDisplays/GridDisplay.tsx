@@ -1,41 +1,46 @@
-
 import React from 'react';
-import { GridContent } from '@/types/content';
+import { Grid } from '@mui/material';
+import { TextDisplay, TitleDisplay, CardDisplay } from './ContentDisplays';
 
-interface GridDisplayProps {
-  content: GridContent;
-  className?: string;
-  onClick?: () => void;
+const componentMap: { [key: string]: React.ComponentType<any> } = {
+  text: TextDisplay,
+  title: TitleDisplay,
+  card: CardDisplay,
+};
+
+interface GridItem {
+  id: string;
+  contentType: string;
+  gridSpan?: number;
+  [key: string]: any; // Additional props for specific components
 }
 
-export const GridDisplay: React.FC<GridDisplayProps> = ({ content, className = '', onClick }) => {
-  const { columns, rows, items } = content;
+interface GridDisplayProps {
+  content: GridItem[];
+  className?: string;
+}
 
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-    gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-    gap: '1rem',
-  };
-
+export const GridDisplay: React.FC<GridDisplayProps> = ({ content, className = '' }) => {
   return (
-    <div 
-      style={gridStyle} 
-      className={`border border-gray-800 p-4 rounded-lg bg-gray-900/30 ${className}`}
-      onClick={onClick}
-    >
-      {items.map((item) => (
-        <div
-          key={item.id}
-          style={{
-            gridColumnStart: item.colStart,
-            gridRowStart: item.rowStart,
-          }}
-          className="bg-blue-500/10 backdrop-blur-sm border border-blue-500/20 rounded-lg p-4 flex items-center justify-center text-white hover:bg-blue-500/20 transition-colors duration-300"
-        >
-          {item.content}
-        </div>
-      ))}
-    </div>
+    <Grid container spacing={2} className={className}>
+      {content.map((item) => {
+        const Component = componentMap[item.contentType];
+        if (!Component) {
+          console.warn(`Unknown content type: ${item.contentType}`);
+          return (
+            <Grid item xs={item.gridSpan || 12} key={item.id}>
+              <div style={{ border: '1px dashed red', padding: '10px' }}>
+                Unknown content type: {item.contentType}
+              </div>
+            </Grid>
+          );
+        }
+        return (
+          <Grid item xs={item.gridSpan || 12} key={item.id}>
+            <Component {...item} />
+          </Grid>
+        );
+      })}
+    </Grid>
   );
 };
